@@ -1,6 +1,7 @@
 package application;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -15,6 +16,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import org.h2.tools.Server;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -30,6 +32,11 @@ public class DataManager {
 	Session session = (Session)sessionFactory.getCurrentSession();
 	
 	public void openConnectionDB() {
+		try {
+			Server.createTcpServer().start();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		session = (Session)sessionFactory.getCurrentSession();
 		session.beginTransaction();
 	}
@@ -37,9 +44,19 @@ public class DataManager {
 	public void closeConnectionDB() {
 		session = (Session)sessionFactory.getCurrentSession();
 		session.close();
+		try {
+			Server.createTcpServer().stop();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static SessionFactory buildSessionFactory() {
+		try {
+			Server.createTcpServer().start();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		SessionFactory sessionFactory = new Configuration()
 				.configure("resources/hibernate.cfg.xml")
 				.buildSessionFactory();
@@ -54,6 +71,11 @@ public class DataManager {
 	
 	public static void shutdown() {
 		sessionFactory.close();
+		try {
+			Server.createTcpServer().stop();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public String haalConfiguratieParameterOp(ConfiguratieType Key) {
